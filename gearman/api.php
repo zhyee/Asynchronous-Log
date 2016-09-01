@@ -1,35 +1,35 @@
 <?php
-
 date_default_timezone_set('Asia/shanghai');
-
 $startTime = microtime(TRUE);
 
-/* 本地写访问日志 */
-$text = 'access log : ' . date('Y-m-d H:i:s') . PHP_EOL;
-file_put_contents('access.log', $text, FILE_APPEND);
+$client = new GearmanClient();
 
-/* 本地写错误日志 */
-$text = 'error log : ' . date('Y-m-d H:i:s') . PHP_EOL;
-file_put_contents('error.log', $text, FILE_APPEND);
+//server1
+if (!$client->addServer('127.0.0.1', 4730))
+{
+    //记录错误日志 127.0.0.1:4730 has down
+}
 
-/* curl调用远程计数接口 */
-$ch = curl_init();
-curl_setopt($ch, CURLOPT_URL, 'http://zyee.org/count-api.php');
-curl_setopt($ch, CURLOPT_HEADER, 0);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-$result = (int)curl_exec($ch);
-curl_close($ch);
+//server2
+if (!$client->addServer('127.0.0.1', 4731))
+{
+    //记录错误日志 127.0.0.1:4731 has down
+}
 
-/* curl写远程日志 */
-$text = '写入日志数据 (' . date('Y-m-d H:i:s') . ')';
-$ch = curl_init();
-curl_setopt($ch, CURLOPT_URL, 'http://zyee.org/log-api.php');
-curl_setopt($ch, CURLOPT_HEADER, 0);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-curl_setopt($ch, CURLOPT_POSTFIELDS, ['info' => $text]);
-$result = curl_exec($ch);
-curl_close($ch);
+//server3
+if (!$client->addServer('127.0.0.1', 4732))
+{
+    //记录错误日志 127.0.0.1:4732 has down
+}
+
+/* 本地访问日志 */
+$text = '本地日志 : ' . date('Y年m月d日 H时i分s秒') . PHP_EOL;
+$jobHandle = $client->doBackground('accessLog', $text);
+
+/* 写远程日志 */
+$text = '[' . date('Y年m月d日 H时i分s秒'). ']日志数据';
+$jobHandle2 = $client->doBackground('curlLog', $text);
 
 $endTime = microtime(TRUE);
 
-echo '成功... 本次花费时间 ' . ($endTime - $startTime) * 1000 . 'ms ' . PHP_EOL;
+echo '本次处理时间 ' . ($endTime - $startTime) * 1000 . 'ms ' . PHP_EOL;

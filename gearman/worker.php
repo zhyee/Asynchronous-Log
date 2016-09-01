@@ -1,29 +1,31 @@
 <?php
 
-// Create our worker object
 $worker = new GearmanWorker();
+$worker->addServer('127.0.0.1', 4730);
+$worker->addServer('127.0.0.1', 4731);
+$worker->addServer('127.0.0.1', 4732);
 
-// Add a server (again, same defaults apply as a worker)
-$worker->addServer();
-
-// Inform the server that this worker can process "reverse" function calls
-$worker->addFunction("reverse", "reverse_fn");
-
-while (1) {
-    print "Waiting for job...\n";
-    $ret = $worker->work(); // work() will block execution until a job is delivered
-    if ($worker->returnCode() != GEARMAN_SUCCESS) {
-        break;
+/* 本地日志处理 */
+$worker->addFunction('accessLog', function (GearmanJob $job) {
+    $text = $job->workload();
+    if (file_put_contents('access.log', $text, FILE_APPEND) !== FALSE)
+    {
+        echo  $job->handle() . '写本地日志成功 : ' . $text . PHP_EOL;
     }
-}
+});
 
-// A much simple reverse function
-function reverse_fn(GearmanJob $job) {
-    $workload = $job->workload();
-    echo "Received job: " . $job->handle() . "\n";
-    echo "Workload: $workload\n";
-    $result = strrev($workload);
-    echo "Result: $result\n";
-    return $result;
-}
+/* 远程日志处理 */
+$worker->addFunction('curlLog', function (GearmanJob $job) {
+    $text = $job->workload();
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, 'http://zyee.org/log-api.php');
+    curl_setopt($ch, CURLOPT_HEADER, 0);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, ['info' => $text]);
+    $result = curl_exec($ch);
+    curl_close($ch);
+    echo $job->handle() . '写远程日志成功' . PHP_EOL;
+});
 
+/* 启动worker */
+while($worker->work());
