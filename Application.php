@@ -1,16 +1,15 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: zyee
- * Date: 2016/8/31
- * Time: 16:17
- */
 
+/* 网站基础功能 */
 
-// 实现守护进程
-class Deamonlize
+class Application
 {
-    public static function Deamonlize()
+
+    /**
+     * 守护进程化
+     * @throws Exception
+     */
+    public static function deamonlize()
     {
 
         $pid = pcntl_fork();

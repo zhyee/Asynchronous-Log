@@ -6,9 +6,9 @@
  * Time: 16:58
  */
 
-require 'deamonlize.php';
+require 'Application.php';
 
-class Demo extends Deamonlize
+class Demo
 {
 
     public function run()
@@ -22,5 +22,5 @@ class Demo extends Deamonlize
 
 }
 
-Demo::Deamonlize();
+Application::deamonlize();
 (new Demo())->run();

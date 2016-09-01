@@ -1,0 +1,45 @@
+<?php
+
+
+//模拟api接口
+
+class Logger
+{
+    private $accessLogFile;
+    private $errorLogFile;
+
+    public function __construct($accessLogFile = NULL, $errorLogFile = NULL)
+    {
+
+        if ($accessLogFile !== NULL)
+        {
+            $this->accessLogFile = $accessLogFile;
+        }
+
+        if ($errorLogFile != NULL)
+        {
+            $this->errorLogFile = $errorLogFile;
+        }
+
+    }
+
+    public function setAccessLogFile($accessLogFile)
+    {
+        $this->accessLogFile = $accessLogFile;
+    }
+
+    public function setErrorLogFile($errorLogFile)
+    {
+        $this->errorLogFile = $errorLogFile;
+    }
+
+    public function log($file, $text)
+    {
+        if (file_put_contents($file, $text, FILE_APPEND) === FALSE)
+        {
+            throw new Exception('写入日志文件失败');
+        }
+    }
+
+}
+
