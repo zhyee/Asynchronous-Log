@@ -1,33 +1,24 @@
 <?php
 date_default_timezone_set('Asia/shanghai');
 $startTime = microtime(TRUE);
-
 $client = new GearmanClient();
-
 //server1
-if (!$client->addServer('127.0.0.1', 4730))
+if (!$client->addServer('192.168.56.101', 4730))
 {
-    //记录错误日志 127.0.0.1:4730 has down
+    echo 'the server 192.168.56.101:4730 cannot be used' . PHP_EOL;
 }
-
 //server2
-if (!$client->addServer('127.0.0.1', 4731))
+if (!$client->addServer('192.168.56.102', 4730))
 {
-    //记录错误日志 127.0.0.1:4731 has down
+    echo 'the server 192.168.56.102:4730 cannot be used' . PHP_EOL;
 }
 
-//server3
-if (!$client->addServer('127.0.0.1', 4732))
-{
-    //记录错误日志 127.0.0.1:4732 has down
-}
-
-/* 本地访问日志 */
-$text = '本地日志 : ' . date('Y年m月d日 H时i分s秒') . PHP_EOL;
-$jobHandle = $client->doBackground('accessLog', $text);
+/* 写本地日志 */
+$text = $_SERVER['HTTP_HOST'] . ' 本地日志 : ' . date('Y-m-d H:i:s') . PHP_EOL;
+$jobHandle = $client->doBackground('localLog', $text);
 
 /* 写远程日志 */
-$text = '[' . date('Y年m月d日 H时i分s秒'). ']日志数据';
+$text = $_SERVER['HTTP_HOST'] . ' 远程日志 : ' . date('Y-m-d H:i:s') . PHP_EOL;
 $jobHandle2 = $client->doBackground('curlLog', $text);
 
 $endTime = microtime(TRUE);
